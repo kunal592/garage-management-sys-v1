@@ -1,21 +1,33 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { type PropsWithChildren } from 'react';
 
+/**
+ * Singleton QueryClient — defined outside the component so it is never
+ * recreated on re-renders or hot reloads.
+ *
+ * Tuned for an offline-first SQLite app (per APP_CONTXT.md):
+ *  - staleTime: Infinity  → data is always considered fresh; no background refetch
+ *  - gcTime: 10 min       → cache entries survive navigation between screens
+ *  - refetchOnFocus: false → app returning to foreground never triggers a fetch
+ *  - refetchOnReconnect: false → no network dependency at all
+ *  - retry: 1             → one retry on unexpected repository errors
+ */
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Retry once on failure
+      staleTime: Infinity,
+      gcTime: 10 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
       retry: 1,
-      // Data is fresh for 30 seconds
-      staleTime: 30_000,
-      // Keep unused data in cache for 5 minutes
-      gcTime: 5 * 60 * 1000,
     },
     mutations: {
       retry: 0,
     },
   },
 });
+
+export { queryClient };
 
 export function QueryProvider({ children }: PropsWithChildren) {
   return (
