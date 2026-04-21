@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Skeleton } from '../ui/Skeleton';
+import { StatCardSkeleton } from '../ui/Skeleton';
 
 interface StatCardProps {
   title: string;
@@ -11,8 +11,10 @@ interface StatCardProps {
   isLoading?: boolean;
 }
 
-export const StatCard: React.FC<StatCardProps> = React.memo(
-  ({ title, value, iconName, color = '#3b82f6', isLoading = false }) => {
+export const StatCard = memo(
+  ({ title, value, iconName, color = '#3b82f6', isLoading = false }: StatCardProps) => {
+    if (isLoading) return <StatCardSkeleton />;
+
     return (
       <View className="flex-1 bg-neutral-900 border border-neutral-800 rounded-2xl p-4 mr-3 last:mr-0 min-w-[140px]">
         <View className="flex-row items-center mb-3 opacity-80">
@@ -21,15 +23,8 @@ export const StatCard: React.FC<StatCardProps> = React.memo(
             {title}
           </Text>
         </View>
-
-        {isLoading ? (
-          <Skeleton className="h-8 w-20 rounded" />
-        ) : (
-          <Text className="text-white text-2xl font-bold tracking-tight">
-            {value}
-          </Text>
-        )}
+        <Text className="text-white text-2xl font-bold tracking-tight">{value}</Text>
       </View>
     );
-  }
+  },
 );

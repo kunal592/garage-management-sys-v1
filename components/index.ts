@@ -1,5 +1,20 @@
+// Splash screen
 export { default as SplashScreen } from './SplashScreen';
-export * from './ui/Skeleton';
-export * from './dashboard/StatCard';
-export * from './dashboard/RecentServiceItem';
 
+// Skeleton system — primitive + all composed screen-level variants
+export {
+  Skeleton,
+  SkeletonRow,
+  SkeletonCircle,
+  SkeletonGroup,
+  StatCardSkeleton,
+  ServiceListItemSkeleton,
+  ServiceListSkeleton,
+  ServiceDetailSkeleton,
+  ServiceFormSkeleton,
+  DashboardSkeleton,
+} from './ui/Skeleton';
+
+// Dashboard components
+export { StatCard } from './dashboard/StatCard';
+export { RecentServiceItem, RecentServiceSkeleton } from './dashboard/RecentServiceItem';

@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useServiceDetail, useMarkServicePerformed, useDeleteService } from '@/hooks/useServices';
-import { Skeleton } from '@/components';
+import { ServiceDetailSkeleton } from '@/components/ui/Skeleton';
 import { formatCurrency, formatDate } from '@/utils/formatters';
+
+const DETAIL_SCROLL_STYLE = { paddingBottom: 100 };
 
 export default function ServiceDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -16,48 +18,32 @@ export default function ServiceDetailScreen() {
   const markPerformedMutation = useMarkServicePerformed();
   const deleteServiceMutation = useDeleteService();
 
-  const handleMarkPerformed = () => {
+  const handleMarkPerformed = useCallback(() => {
     Alert.alert(
       'Confirm Completion',
       'Are you sure you want to mark this service as performed? This will finalize the totals.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Confirm', 
-          style: 'default',
-          onPress: () => markPerformedMutation.mutate(serviceId)
-        }
-      ]
+        { text: 'Confirm', style: 'default', onPress: () => markPerformedMutation.mutate(serviceId) },
+      ],
     );
-  };
+  }, [markPerformedMutation, serviceId]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     Alert.alert(
       'Delete Service',
       'This will permanently delete this service and all associated part records. Cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
-          style: 'destructive',
-          onPress: () => {
-            deleteServiceMutation.mutate(serviceId, {
-              onSuccess: () => router.back()
-            });
-          }
-        }
-      ]
+        { text: 'Delete', style: 'destructive', onPress: () => deleteServiceMutation.mutate(serviceId, { onSuccess: () => router.back() }) },
+      ],
     );
-  };
+  }, [deleteServiceMutation, router, serviceId]);
 
   if (isLoading || !service) {
     return (
-      <SafeAreaView className="flex-1 bg-neutral-950 p-4">
-        <Skeleton className="h-10 w-10 rounded-full mb-6" />
-        <Skeleton className="h-8 w-48 mb-2" />
-        <Skeleton className="h-4 w-32 mb-8" />
-        <Skeleton className="h-32 w-full rounded-2xl mb-4" />
-        <Skeleton className="h-48 w-full rounded-2xl" />
+      <SafeAreaView className="flex-1 bg-neutral-950">
+        <ServiceDetailSkeleton />
       </SafeAreaView>
     );
   }
@@ -83,7 +69,7 @@ export default function ServiceDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={DETAIL_SCROLL_STYLE}>
         {/* Title Block */}
         <View className="mb-8">
           <View className="flex-row items-center mb-2">
