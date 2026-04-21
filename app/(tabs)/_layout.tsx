@@ -42,6 +42,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="analytics"
+        options={{
+          title: 'Analytics',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="pie-chart-sharp" size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
