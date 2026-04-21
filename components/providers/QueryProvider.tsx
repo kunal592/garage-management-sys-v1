@@ -1,5 +1,6 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query';
 import { type PropsWithChildren } from 'react';
+import { Alert } from 'react-native';
 
 /**
  * Singleton QueryClient — defined outside the component so it is never
@@ -13,6 +14,20 @@ import { type PropsWithChildren } from 'react';
  *  - retry: 1             → one retry on unexpected repository errors
  */
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      console.error('[Global Query Error]:', error);
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      console.error('[Global Mutation Error]:', error);
+      Alert.alert(
+        'Action Failed', 
+        error instanceof Error ? error.message : 'An unknown error occurred while trying to save data.'
+      );
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: Infinity,
