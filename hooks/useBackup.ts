@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import * as FileSystem from 'expo-file-system';
+import * as DocumentPicker from 'expo-document-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { exportAllData } from '@/data/repositories/dashboardRepo';
+import { exportAllData, importAllData } from '@/data/repositories/dashboardRepo';
+import { queryClient } from '@/components/providers/QueryProvider';
 
 const LAST_BACKUP_KEY = '@last_backup_date';
 
@@ -114,9 +116,47 @@ export function useBackup() {
     }
   }, [loadDate]);
 
+  const restoreBackup = useCallback(async () => {
+    try {
+      setIsExporting(true); // Reusing the exporting state as a general loading flag
+
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return false;
+
+      const fileUri = result.assets[0].uri;
+      const fileString = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: FileSystem.EncodingType.UTF8,
+      });
+
+      const parsed = JSON.parse(fileString);
+
+      // Validate signature
+      if (!parsed.customers || !parsed.vehicles || !parsed.services || !parsed.serviceParts || !parsed.images) {
+        throw new Error('Invalid backup file structure. Cannot restore.');
+      }
+
+      await importAllData(parsed);
+
+      // Successfully replaced DB -> Clear all React Query in-memory caches!
+      queryClient.clear();
+      
+      return true;
+
+    } catch (err) {
+      throw err;
+    } finally {
+      setIsExporting(false);
+    }
+  }, []);
+
   return {
     isExporting,
     lastBackupDate,
     createBackup,
+    restoreBackup,
   };
 }

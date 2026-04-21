@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 import { Breadcrumbs } from '@/components';
 import { useBackup } from '@/hooks/useBackup';
@@ -10,8 +10,9 @@ import { formatDate } from '@/utils/formatters';
 import * as FileSystem from 'expo-file-system';
 
 export default function SettingsTab() {
+  const router = useRouter();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const { isExporting, lastBackupDate, createBackup } = useBackup();
+  const { isExporting, lastBackupDate, createBackup, restoreBackup } = useBackup();
 
   useFocusEffect(
     useCallback(() => {
@@ -34,6 +35,33 @@ export default function SettingsTab() {
       console.error('Backup failure:', err);
       Alert.alert('Backup Failed', err instanceof Error ? err.message : String(err));
     }
+  };
+
+  const handleRestore = () => {
+    Alert.alert(
+      'Warning: Destructive Reset',
+      'Restoring from a backup will permanently completely replace and ERASE your current existing database. Are you absolutely sure?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Erase and Restore',
+          style: 'destructive',
+          onPress: async () => {
+             try {
+               const success = await restoreBackup();
+               if (success) {
+                 Alert.alert('Restore Complete', 'Database successfully restored.', [
+                   { text: 'OK', onPress: () => router.replace('/') }
+                 ]);
+               }
+             } catch (err) {
+               console.error('Restore failure:', err);
+               Alert.alert('Restore Failed', err instanceof Error ? err.message : String(err));
+             }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -69,7 +97,7 @@ export default function SettingsTab() {
               activeOpacity={0.8}
               onPress={handleExport}
               disabled={isExporting}
-              className={`rounded-xl py-3.5 items-center flex-row justify-center border ${
+              className={`rounded-xl py-3.5 items-center flex-row justify-center border mb-3 ${
                 isExporting 
                   ? 'bg-neutral-800 border-neutral-700' 
                   : 'bg-neutral-800 border-neutral-700 active:bg-neutral-700'
@@ -82,6 +110,22 @@ export default function SettingsTab() {
               />
               <Text className={`font-bold ml-2 ${isExporting ? 'text-neutral-400' : 'text-white'}`}>
                 {isExporting ? 'Exporting...' : 'Export Offline Data Structure'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleRestore}
+              disabled={isExporting}
+              className={`rounded-xl py-3.5 items-center flex-row justify-center border ${
+                isExporting 
+                  ? 'bg-red-900/20 border-red-900/30' 
+                  : 'bg-red-900/20 border-red-800 active:bg-red-900/40'
+              }`}
+            >
+              <Ionicons name="warning" size={18} color={isExporting ? '#9ca3af' : '#ef4444'} />
+              <Text className={`font-bold ml-2 ${isExporting ? 'text-neutral-500' : 'text-red-500'}`}>
+                Restore Database from Backup
               </Text>
             </TouchableOpacity>
           </View>
