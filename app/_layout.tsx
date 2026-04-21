@@ -12,6 +12,7 @@ import { SplashScreen } from '@/components';
 import { BreadcrumbProvider } from '@/hooks/useBreadcrumbs';
 import { initDatabase } from '@/data/db/sqlite';
 import { runAutoBackupPolicy } from '@/hooks/useBackup';
+import { cleanupExpiredImages } from '@/data/repositories/imageRepo';
 
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   return (
@@ -45,8 +46,11 @@ export default function RootLayout() {
     initDatabase()
       .then(async () => {
         setDbReady(true);
-        // Once DB is structurally mapped, execute background backup checks
-        await runAutoBackupPolicy();
+        // Once DB is structurally mapped, execute background cleanup & backup arrays
+        await Promise.allSettled([
+          cleanupExpiredImages(),
+          runAutoBackupPolicy()
+        ]);
       })
       .catch((err) => {
         console.error('[DB] Failed to initialize database:', err);
