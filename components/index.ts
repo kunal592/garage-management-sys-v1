@@ -14,6 +14,7 @@ export {
   ServiceFormSkeleton,
   DashboardSkeleton,
 } from './ui/Skeleton';
+export { Breadcrumbs } from './ui/Breadcrumbs';
 
 // Dashboard components
 export { StatCard } from './dashboard/StatCard';

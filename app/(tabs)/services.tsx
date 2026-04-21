@@ -2,9 +2,11 @@ import React, { useState, useCallback, useMemo, memo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useServices } from '@/hooks/useServices';
-import { RecentServiceSkeleton, RecentServiceItem } from '@/components';
+import { RecentServiceSkeleton, RecentServiceItem, Breadcrumbs } from '@/components';
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 import { queryClient } from '@/components/providers/QueryProvider';
 import { queryKeys } from '@/hooks/queryKeys';
 import type { ServiceStatus } from '@/data/repositories/serviceRepo';
@@ -49,7 +51,7 @@ const ServicesHeader = memo(({
   onFilterPerformed,
   onAddPress,
 }: ServicesHeaderProps) => (
-  <View className="mb-6 mt-2">
+  <View className="mb-2 mt-2">
     <View className="flex-row justify-between items-center mb-4">
       <View>
         <Text className="text-3xl font-extrabold text-white tracking-tight">Services</Text>
@@ -67,6 +69,9 @@ const ServicesHeader = memo(({
       <FilterPill label="All"       active={statusFilter === 'All'}       onPress={onFilterAll} />
       <FilterPill label="Pending"   active={statusFilter === 'Pending'}   onPress={onFilterPending} />
       <FilterPill label="Performed" active={statusFilter === 'Performed'} onPress={onFilterPerformed} />
+    </View>
+    <View className="mt-4 -ml-4 -mr-4">
+      <Breadcrumbs />
     </View>
   </View>
 ));
@@ -117,6 +122,17 @@ const PaginationFooter = memo(({ page, hasMore, onPrev, onNext }: PaginationFoot
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 export default function ServicesTab() {
+  const { setBreadcrumbs } = useBreadcrumbs();
+  
+  useFocusEffect(
+    useCallback(() => {
+      setBreadcrumbs([
+        { label: 'Dashboard', path: '/' },
+        { label: 'Services', path: '/services' }
+      ]);
+    }, [setBreadcrumbs])
+  );
+
   const router = useRouter();
   const [page, setPage]               = useState(0);
   const [statusFilter, setStatusFilter] = useState<'All' | 'Pending' | 'Performed'>('All');

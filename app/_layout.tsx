@@ -1,12 +1,13 @@
 import '../global.css';
 
-import { Stack } from 'expo-router';
+import { Stack, Slot } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { SplashScreen } from '@/components';
+import { BreadcrumbProvider } from '@/hooks/useBreadcrumbs';
 import { initDatabase } from '@/data/db/sqlite';
 
 export default function RootLayout() {
@@ -30,13 +31,15 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryProvider>
-        <StatusBar style="auto" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            animation: 'slide_from_right',
-          }}
-        />
+        <BreadcrumbProvider>
+          <StatusBar style="light" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: 'slide_from_right',
+            }}
+          />
+        </BreadcrumbProvider>
       </QueryProvider>
     </GestureHandlerRootView>
   );

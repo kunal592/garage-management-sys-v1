@@ -2,13 +2,26 @@ import React, { useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
 import { useAnalytics } from '@/hooks/useDashboard';
-import { Skeleton } from '@/components';
+import { Skeleton, Breadcrumbs } from '@/components';
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 import { queryClient } from '@/components/providers/QueryProvider';
 import { queryKeys } from '@/hooks/queryKeys';
 import { formatCurrency } from '@/utils/formatters';
 
 export default function AnalyticsTab() {
+  const { setBreadcrumbs } = useBreadcrumbs();
+  
+  useFocusEffect(
+    useCallback(() => {
+      setBreadcrumbs([
+        { label: 'Dashboard', path: '/' },
+        { label: 'Analytics', path: '/analytics' }
+      ]);
+    }, [setBreadcrumbs])
+  );
+
   const { revenue, parts, customers, isLoading, isError } = useAnalytics(6, 5);
 
   const [refreshing, setRefreshing] = React.useState(false);
@@ -46,11 +59,11 @@ export default function AnalyticsTab() {
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-950 px-4" edges={['top']}>
-      {/* Header */}
-      <View className="mb-6 mt-2">
+      <View className="mb-2 mt-2">
         <Text className="text-3xl font-extrabold text-white tracking-tight">Analytics</Text>
         <Text className="text-neutral-400 font-medium">Business insights and performance</Text>
       </View>
+      <Breadcrumbs />
 
       <ScrollView 
         showsVerticalScrollIndicator={false}

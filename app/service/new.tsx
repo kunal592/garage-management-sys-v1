@@ -1,16 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCreateService } from '@/hooks/useServices';
 import { useVehicles } from '@/hooks/useVehicles'; // Assuming useVehicles pulls the flattened list
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
+import { Breadcrumbs } from '@/components';
 import { CreateServicePartInput } from '@/data/repositories/serviceRepo';
 
 export default function NewServiceScreen() {
+  const { setBreadcrumbs } = useBreadcrumbs();
   const router = useRouter();
   const createServiceMutation = useCreateService();
   const { data: vehicles } = useVehicles();
+
+  useFocusEffect(
+    useCallback(() => {
+      setBreadcrumbs([
+        { label: 'Dashboard', path: '/' },
+        { label: 'Services', path: '/services' },
+        { label: 'New Service' }
+      ]);
+    }, [setBreadcrumbs])
+  );
 
   const [vehicleId, setVehicleId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
@@ -106,6 +119,10 @@ export default function NewServiceScreen() {
 
         <ScrollView className="px-4" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
           
+          <View className="-mx-4 mb-2">
+            <Breadcrumbs />
+          </View>
+
           {/* Vehicle Selection Block - Kept raw for simplicity without 3rd party dropdowns */}
           <Text className="text-neutral-400 font-semibold mb-2 uppercase text-xs tracking-wider">Select Vehicle *</Text>
           <TouchableOpacity 

@@ -2,8 +2,10 @@ import React, { useState, useCallback, useMemo, memo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
 import { useServiceAlerts } from '@/hooks/useVehicles';
-import { Skeleton } from '@/components';
+import { Skeleton, Breadcrumbs } from '@/components';
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 import { formatDate } from '@/utils/formatters';
 import type { UpcomingServiceAlert } from '@/data/repositories/vehicleRepo';
 
@@ -104,6 +106,17 @@ const FILTER_OPTIONS = [
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 export default function AlertsTab() {
+  const { setBreadcrumbs } = useBreadcrumbs();
+  
+  useFocusEffect(
+    useCallback(() => {
+      setBreadcrumbs([
+        { label: 'Dashboard', path: '/' },
+        { label: 'Alerts', path: '/alerts' }
+      ]);
+    }, [setBreadcrumbs])
+  );
+
   const [daysAhead, setDaysAhead] = useState<1 | 2 | 7>(2);
   const { data: alerts, isLoading, refetch } = useServiceAlerts(daysAhead);
 
@@ -132,9 +145,13 @@ export default function AlertsTab() {
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-950 px-4" edges={['top']}>
-      <View className="mb-6 mt-2">
+      <View className="mb-2 mt-2">
         <Text className="text-3xl font-extrabold text-white tracking-tight">Alerts</Text>
         <Text className="text-neutral-400 font-medium">Upcoming service reminders</Text>
+
+        <View className="mt-4 -ml-4 -mr-4">
+          <Breadcrumbs />
+        </View>
 
         <View className="flex-row gap-2 mt-4">
           {FILTER_OPTIONS.map(f => (

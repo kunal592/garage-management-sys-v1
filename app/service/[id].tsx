@@ -1,18 +1,32 @@
 import React, { useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useServiceDetail, useMarkServicePerformed, useDeleteService } from '@/hooks/useServices';
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
+import { Breadcrumbs } from '@/components';
 import { ServiceDetailSkeleton } from '@/components/ui/Skeleton';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 
 const DETAIL_SCROLL_STYLE = { paddingBottom: 100 };
 
 export default function ServiceDetailScreen() {
+  const { setBreadcrumbs } = useBreadcrumbs();
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const serviceId = Number(id);
+
+  useFocusEffect(
+    useCallback(() => {
+      setBreadcrumbs([
+        { label: 'Dashboard', path: '/' },
+        { label: 'Services', path: '/services' },
+        { label: 'Details' }
+      ]);
+    }, [setBreadcrumbs])
+  );
 
   const { data: service, isLoading } = useServiceDetail(serviceId);
   const markPerformedMutation = useMarkServicePerformed();
@@ -70,6 +84,11 @@ export default function ServiceDetailScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={DETAIL_SCROLL_STYLE}>
+        {/* Breadcrumbs inside scrollview to scroll out of view nicely */}
+        <View className="-mx-4 mb-2">
+          <Breadcrumbs />
+        </View>
+
         {/* Title Block */}
         <View className="mb-8">
           <View className="flex-row items-center mb-2">

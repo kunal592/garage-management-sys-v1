@@ -2,7 +2,9 @@ import React, { useCallback, useMemo, memo } from 'react';
 import { View, Text, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { StatCard, RecentServiceItem, RecentServiceSkeleton } from '@/components';
+import { useFocusEffect } from 'expo-router';
+import { StatCard, RecentServiceItem, RecentServiceSkeleton, Breadcrumbs } from '@/components';
+import { useBreadcrumbs } from '@/hooks/useBreadcrumbs';
 import { useDashboardStats, useRecentServices } from '@/hooks/useDashboard';
 import { queryClient } from '@/components/providers/QueryProvider';
 import { queryKeys } from '@/hooks/queryKeys';
@@ -12,6 +14,14 @@ import { formatCurrency } from '@/utils/formatters';
 const SCROLL_CONTENT_STYLE = { paddingBottom: 100 };
 
 export default function DashboardScreen() {
+  const { setBreadcrumbs } = useBreadcrumbs();
+  
+  useFocusEffect(
+    useCallback(() => {
+      setBreadcrumbs([{ label: 'Dashboard', path: '/' }]);
+    }, [setBreadcrumbs])
+  );
+
   // Queries - React Query hooks
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useDashboardStats();
   const { data: recentServices, isLoading: servicesLoading, refetch: refetchServices } = useRecentServices(10);
@@ -70,7 +80,7 @@ export default function DashboardScreen() {
   return (
     <SafeAreaView className="flex-1 bg-neutral-950 px-4">
       {/* Header */}
-      <View className="mb-6 mt-2">
+      <View className="mb-2 mt-2">
         <Text className="text-3xl font-extrabold text-white tracking-tight">
           Garage OS
         </Text>
@@ -78,6 +88,7 @@ export default function DashboardScreen() {
           Welcome back to the command center
         </Text>
       </View>
+      <Breadcrumbs />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
