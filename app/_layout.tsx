@@ -11,6 +11,7 @@ import { QueryProvider } from '@/components/providers/QueryProvider';
 import { SplashScreen } from '@/components';
 import { BreadcrumbProvider } from '@/hooks/useBreadcrumbs';
 import { initDatabase } from '@/data/db/sqlite';
+import { runAutoBackupPolicy } from '@/hooks/useBackup';
 
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   return (
@@ -42,7 +43,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     initDatabase()
-      .then(() => setDbReady(true))
+      .then(async () => {
+        setDbReady(true);
+        // Once DB is structurally mapped, execute background backup checks
+        await runAutoBackupPolicy();
+      })
       .catch((err) => {
         console.error('[DB] Failed to initialize database:', err);
         setDbError(err instanceof Error ? err : new Error(String(err)));
