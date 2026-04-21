@@ -24,7 +24,15 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* Add more tabs later: Vehicles, Services, Settings */}
+      <Tabs.Screen
+        name="services"
+        options={{
+          title: 'Services',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="build-sharp" size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
